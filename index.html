@@ -1,136 +1,244 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TopiaBets - Kolikonheitto</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TopiaBets</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #1e1e2f, #2b3a67);
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #1f2937, #111827);
+      color: #fff;
+    }
+    header {
+      background-color: #111827;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 0 10px #000;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #60a5fa;
+    }
+    .balance {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .game-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      padding: 2rem;
+    }
+    .game {
+      background-color: #1e293b;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      width: 300px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    .game:hover {
+      transform: scale(1.03);
+    }
+    button {
+      background-color: #3b82f6;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
       color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .cell {
+      width: 50px;
+      height: 50px;
+      background-color: #374151;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .cell.revealed {
+      background-color: #10b981;
+    }
+    .cell.mine {
+      background-color: #ef4444;
+    }
+    .tower {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
+      gap: 0.5rem;
+      margin-top: 1rem;
     }
-
-    h1 {
-      margin-top: 40px;
-      font-size: 36px;
-      color: #ffd700;
-    }
-
-    .game-box {
-      background: #2d2d44;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      max-width: 400px;
-      width: 90%;
+    .floor {
+      background-color: #334155;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
       text-align: center;
-    }
-
-    .balance {
-      font-size: 20px;
-      margin-bottom: 20px;
-      color: #00ffcc;
-    }
-
-    .result {
-      font-size: 20px;
-      margin: 20px 0;
-    }
-
-    button {
-      background: #4a90e2;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 8px;
-      margin: 10px;
       cursor: pointer;
-      transition: background 0.3s ease;
     }
-
-    button:hover {
-      background: #357ABD;
-    }
-
-    input[type="number"] {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      width: 100px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    .footer {
-      margin-top: auto;
-      padding: 20px;
-      font-size: 14px;
-      opacity: 0.5;
+    .floor.active {
+      background-color: #22c55e;
     }
   </style>
 </head>
 <body>
-  <h1>TopiaBets</h1>
-  <div class="game-box">
-    <div class="balance" id="balance">Saldo: 100 TopiaCoins</div>
+  <header>
+    <h1>TopiaBets</h1>
+    <div class="balance">Balance: <span id="balance">1000</span> 💰</div>
+  </header>
 
-    <label for="bet">Panos:</label><br />
-    <input type="number" id="bet" min="1" value="10" /><br />
+  <div class="game-container">
+    <!-- Coinflip -->
+    <div class="game">
+      <h2>🪙 Coinflip</h2>
+      <p>Choose heads or tails to win!</p>
+      <button onclick="playCoinflip()">Flip Coin</button>
+    </div>
 
-    <button onclick="flipCoin('Kruuna')">Kruuna</button>
-    <button onclick="flipCoin('Klaava')">Klaava</button>
+    <!-- Mines -->
+    <div class="game">
+      <h2>💣 Mines</h2>
+      <p>Try to avoid the mines!</p>
+      <div class="grid" id="minesGrid"></div>
+      <button onclick="resetMines()">Reset</button>
+    </div>
 
-    <div class="result" id="result"></div>
+    <!-- Tower -->
+    <div class="game">
+      <h2>🗼 Tower</h2>
+      <p>Climb the tower for rewards!</p>
+      <div class="tower" id="towerGame"></div>
+      <button onclick="resetTower()">Reset</button>
+    </div>
   </div>
 
-  <div class="footer">© 2025 TopiaBets</div>
+  <audio id="coinSound" src="https://www.myinstants.com/media/sounds/coinflip.mp3"></audio>
+  <audio id="boomSound" src="https://www.myinstants.com/media/sounds/explosion.mp3"></audio>
+  <audio id="winSound" src="https://www.myinstants.com/media/sounds/mario-coin.mp3"></audio>
 
   <script>
-    let balance = 100;
+    let balance = 1000;
+    const balanceEl = document.getElementById("balance");
 
-    function updateBalance() {
-      document.getElementById('balance').innerText = `Saldo: ${balance} TopiaCoins`;
+    function updateBalance(amount) {
+      balance += amount;
+      balanceEl.textContent = balance;
     }
 
-    function flipCoin(choice) {
-      const betAmount = parseInt(document.getElementById('bet').value);
-
-      if (isNaN(betAmount) || betAmount <= 0) {
-        alert("Syötä kelvollinen panos.");
-        return;
-      }
-
-      if (betAmount > balance) {
-        alert("Ei tarpeeksi TopiaCoineja.");
-        return;
-      }
-
-      const outcome = Math.random() < 0.5 ? 'Kruuna' : 'Klaava';
-      let resultText = `Tulos: ${outcome}. `;
-
-      if (outcome === choice) {
-        balance += betAmount;
-        resultText += "Voitit!";
+    function playCoinflip() {
+      const win = Math.random() < 0.5;
+      document.getElementById("coinSound").play();
+      if (win) {
+        alert("You won 100!");
+        updateBalance(100);
       } else {
-        balance -= betAmount;
-        resultText += "Hävisit!";
+        alert("You lost 100!");
+        updateBalance(-100);
       }
-
-      document.getElementById('result').innerText = resultText;
-      updateBalance();
     }
 
-    updateBalance();
+    // Mines
+    const minesGrid = document.getElementById("minesGrid");
+    let minePositions = [];
+
+    function generateMines() {
+      minePositions = [];
+      while (minePositions.length < 5) {
+        let rand = Math.floor(Math.random() * 25);
+        if (!minePositions.includes(rand)) {
+          minePositions.push(rand);
+        }
+      }
+    }
+
+    function createMinesGrid() {
+      minesGrid.innerHTML = "";
+      for (let i = 0; i < 25; i++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.addEventListener("click", () => revealCell(cell, i));
+        minesGrid.appendChild(cell);
+      }
+    }
+
+    function revealCell(cell, index) {
+      if (minePositions.includes(index)) {
+        cell.classList.add("mine");
+        document.getElementById("boomSound").play();
+        alert("💥 You hit a mine! -100");
+        updateBalance(-100);
+      } else {
+        cell.classList.add("revealed");
+        document.getElementById("winSound").play();
+        updateBalance(50);
+      }
+      cell.removeEventListener("click", () => revealCell(cell, index));
+    }
+
+    function resetMines() {
+      generateMines();
+      createMinesGrid();
+    }
+
+    // Tower
+    const towerGame = document.getElementById("towerGame");
+    let currentLevel = 0;
+
+    function createTower() {
+      towerGame.innerHTML = "";
+      for (let i = 0; i < 5; i++) {
+        const floor = document.createElement("div");
+        floor.classList.add("floor");
+        floor.textContent = `Floor ${i + 1}`;
+        floor.addEventListener("click", () => selectFloor(floor, i));
+        towerGame.appendChild(floor);
+      }
+    }
+
+    function selectFloor(floor, level) {
+      if (level !== currentLevel) return;
+      const success = Math.random() < 0.7;
+      if (success) {
+        floor.classList.add("active");
+        document.getElementById("winSound").play();
+        updateBalance(75 * (level + 1));
+        currentLevel++;
+      } else {
+        document.getElementById("boomSound").play();
+        alert("You fell from the tower! -150");
+        updateBalance(-150);
+        resetTower();
+      }
+    }
+
+    function resetTower() {
+      currentLevel = 0;
+      createTower();
+    }
+
+    // Init
+    resetMines();
+    resetTower();
   </script>
 </body>
 </html>
