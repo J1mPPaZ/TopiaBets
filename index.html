@@ -1,244 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TopiaBets</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to bottom right, #1f2937, #111827);
-      color: #fff;
-    }
-    header {
-      background-color: #111827;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 0 10px #000;
-    }
-    h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #60a5fa;
-    }
-    .balance {
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
-    .game-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      padding: 2rem;
-    }
-    .game {
-      background-color: #1e293b;
-      padding: 1.5rem;
-      border-radius: 1rem;
-      width: 300px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-      transition: transform 0.2s;
-    }
-    .game:hover {
-      transform: scale(1.03);
-    }
-    button {
-      background-color: #3b82f6;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 9999px;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      margin-top: 1rem;
-    }
-    button:hover {
-      background-color: #2563eb;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-    .cell {
-      width: 50px;
-      height: 50px;
-      background-color: #374151;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .cell.revealed {
-      background-color: #10b981;
-    }
-    .cell.mine {
-      background-color: #ef4444;
-    }
-    .tower {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-    .floor {
-      background-color: #334155;
-      padding: 0.75rem;
-      border-radius: 0.5rem;
-      text-align: center;
-      cursor: pointer;
-    }
-    .floor.active {
-      background-color: #22c55e;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TopiaBets - Multi-Game</title>
+<style>
+  body {
+    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: #fff;
+  }
+  header {
+    background: #111827;
+    padding: 1rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 0 10px #000;
+  }
+  header h1 {
+    margin: 0; color: #60a5fa;
+  }
+  .balance {
+    font-weight: bold; font-size: 1.2rem;
+  }
+  nav {
+    background: #1e293b;
+    padding: 0.75rem 2rem;
+    display: flex;
+    gap: 1.5rem;
+  }
+  nav button {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.25s, color 0.25s;
+  }
+  nav button:hover,
+  nav button.active {
+    background-color: #3b82f6;
+    color: white;
+  }
+  main > section {
+    display: none;
+    padding: 2rem;
+    max-width: 600px;
+    margin: auto;
+    background: #1e293b;
+    border-radius: 1rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  }
+  main > section.active {
+    display: block;
+  }
+  button.play-btn {
+    background-color: #3b82f6;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 9999px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s;
+  }
+  button.play-btn:hover {
+    background-color: #2563eb;
+  }
+  /* Mines grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 50px);
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .cell {
+    width: 50px; height: 50px;
+    background-color: #374151;
+    border-radius: 0.5rem;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s;
+  }
+  .cell.revealed {
+    background-color: #10b981;
+  }
+  .cell.mine {
+    background-color: #ef4444;
+  }
+  /* Tower floors */
+  .tower {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  .floor {
+    background-color: #334155;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s;
+  }
+  .floor.active {
+    background-color: #22c55e;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>TopiaBets</h1>
-    <div class="balance">Balance: <span id="balance">1000</span> 💰</div>
-  </header>
 
-  <div class="game-container">
-    <!-- Coinflip -->
-    <div class="game">
-      <h2>🪙 Coinflip</h2>
-      <p>Choose heads or tails to win!</p>
-      <button onclick="playCoinflip()">Flip Coin</button>
-    </div>
+<header>
+  <h1>TopiaBets</h1>
+  <div class="balance">Balance: <span id="balance">1000</span> 💰</div>
+</header>
 
-    <!-- Mines -->
-    <div class="game">
-      <h2>💣 Mines</h2>
-      <p>Try to avoid the mines!</p>
-      <div class="grid" id="minesGrid"></div>
-      <button onclick="resetMines()">Reset</button>
-    </div>
+<nav>
+  <button class="nav-btn active" data-target="coinflip-section">Coinflip 🪙</button>
+  <button class="nav-btn" data-target="mines-section">Mines 💣</button>
+  <button class="nav-btn" data-target="tower-section">Tower 🗼</button>
+</nav>
 
-    <!-- Tower -->
-    <div class="game">
-      <h2>🗼 Tower</h2>
-      <p>Climb the tower for rewards!</p>
-      <div class="tower" id="towerGame"></div>
-      <button onclick="resetTower()">Reset</button>
-    </div>
-  </div>
+<main>
+  <!-- Coinflip -->
+  <section id="coinflip-section" class="active">
+    <h2>Coinflip</h2>
+    <p>Choose heads or tails and try your luck!</p>
+    <button class="play-btn" id="coinflip-play">Flip Coin</button>
+  </section>
 
-  <audio id="coinSound" src="https://www.myinstants.com/media/sounds/coinflip.mp3"></audio>
-  <audio id="boomSound" src="https://www.myinstants.com/media/sounds/explosion.mp3"></audio>
-  <audio id="winSound" src="https://www.myinstants.com/media/sounds/mario-coin.mp3"></audio>
+  <!-- Mines -->
+  <section id="mines-section">
+    <h2>Mines</h2>
+    <p>Avoid the mines and win rewards!</p>
+    <div class="grid" id="minesGrid"></div>
+    <button class="play-btn" id="mines-reset">Reset</button>
+  </section>
 
-  <script>
-    let balance = 1000;
-    const balanceEl = document.getElementById("balance");
+  <!-- Tower -->
+  <section id="tower-section">
+    <h2>Tower</h2>
+    <p>Climb the tower floor by floor and win prizes!</p>
+    <div class="tower" id="towerGame"></div>
+    <button class="play-btn" id="tower-reset">Reset</button>
+  </section>
+</main>
 
-    function updateBalance(amount) {
-      balance += amount;
-      balanceEl.textContent = balance;
-    }
+<!-- Sounds for each game -->
+<audio id="coinflip-sound" src="https://www.myinstants.com/media/sounds/coinflip.mp3" preload="auto" volume="0.3"></audio>
+<audio id="coinflip-win" src="https://www.myinstants.com/media/sounds/mario-coin.mp3" preload="auto" volume="0.3"></audio>
+<audio id="coinflip-lose" src="https://www.myinstants.com/media/sounds/fail-trombone.mp3" preload="auto" volume="0.3"></audio>
 
-    function playCoinflip() {
-      const win = Math.random() < 0.5;
-      document.getElementById("coinSound").play();
-      if (win) {
+<audio id="mines-boom" src="https://www.myinstants.com/media/sounds/explosion.mp3" preload="auto" volume="0.2"></audio>
+<audio id="mines-win" src="https://www.myinstants.com/media/sounds/coin.mp3" preload="auto" volume="0.2"></audio>
+
+<audio id="tower-win" src="https://www.myinstants.com/media/sounds/mario-coin.mp3" preload="auto" volume="0.3"></audio>
+<audio id="tower-lose" src="https://www.myinstants.com/media/sounds/fail-trombone.mp3" preload="auto" volume="0.3"></audio>
+
+<script>
+  // Navigation handling
+  const navButtons = document.querySelectorAll('nav button');
+  const sections = document.querySelectorAll('main > section');
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      navButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const target = btn.getAttribute('data-target');
+      sections.forEach(section => {
+        section.classList.toggle('active', section.id === target);
+      });
+    });
+  });
+
+  // Balance
+  let balance = 1000;
+  const balanceEl = document.getElementById('balance');
+
+  function updateBalance(amount) {
+    balance += amount;
+    if(balance < 0) balance = 0;
+    balanceEl.textContent = balance;
+  }
+
+  // Coinflip Game
+  const coinflipPlayBtn = document.getElementById('coinflip-play');
+  const coinflipSound = document.getElementById('coinflip-sound');
+  const coinflipWinSound = document.getElementById('coinflip-win');
+  const coinflipLoseSound = document.getElementById('coinflip-lose');
+
+  coinflipPlayBtn.addEventListener('click', () => {
+    coinflipSound.volume = 0.3;
+    coinflipSound.play();
+
+    const win = Math.random() < 0.5;
+    setTimeout(() => {
+      if(win) {
+        coinflipWinSound.volume = 0.3;
+        coinflipWinSound.play();
         alert("You won 100!");
         updateBalance(100);
       } else {
+        coinflipLoseSound.volume = 0.3;
+        coinflipLoseSound.play();
         alert("You lost 100!");
         updateBalance(-100);
       }
+    }, 1000);
+  });
+
+  // Mines Game
+  const minesGrid = document.getElementById('minesGrid');
+  const minesResetBtn = document.getElementById('mines-reset');
+  const minesBoomSound = document.getElementById('mines-boom');
+  const minesWinSound = document.getElementById('mines-win');
+
+  let minePositions = [];
+  let revealedIndices = new Set();
+
+  function generateMines() {
+    minePositions = [];
+    while(minePositions.length < 5){
+      let rand = Math.floor(Math.random() * 25);
+      if(!minePositions.includes(rand)) minePositions.push(rand);
     }
+  }
 
-    // Mines
-    const minesGrid = document.getElementById("minesGrid");
-    let minePositions = [];
-
-    function generateMines() {
-      minePositions = [];
-      while (minePositions.length < 5) {
-        let rand = Math.floor(Math.random() * 25);
-        if (!minePositions.includes(rand)) {
-          minePositions.push(rand);
-        }
-      }
+  function createMinesGrid() {
+    minesGrid.innerHTML = '';
+    revealedIndices.clear();
+    for(let i=0; i<25; i++){
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.addEventListener('click', () => revealCell(cell, i));
+      minesGrid.appendChild(cell);
     }
+  }
 
-    function createMinesGrid() {
-      minesGrid.innerHTML = "";
-      for (let i = 0; i < 25; i++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.addEventListener("click", () => revealCell(cell, i));
-        minesGrid.appendChild(cell);
-      }
+  function revealCell(cell, index){
+    if(revealedIndices.has(index)) return; // Already revealed
+    revealedIndices.add(index);
+
+    if(minePositions.includes(index)){
+      cell.classList.add('mine');
+      minesBoomSound.volume = 0.2;
+      minesBoomSound.play();
+      alert('💥 You hit a mine! -100');
+      updateBalance(-100);
+      // disable further clicks after loss
+      disableMinesClicks();
+    } else {
+      cell.classList.add('revealed');
+      minesWinSound.volume = 0.2;
+      minesWinSound.play();
+      updateBalance(50);
     }
+  }
 
-    function revealCell(cell, index) {
-      if (minePositions.includes(index)) {
-        cell.classList.add("mine");
-        document.getElementById("boomSound").play();
-        alert("💥 You hit a mine! -100");
-        updateBalance(-100);
-      } else {
-        cell.classList.add("revealed");
-        document.getElementById("winSound").play();
-        updateBalance(50);
-      }
-      cell.removeEventListener("click", () => revealCell(cell, index));
+  function disableMinesClicks(){
+    const cells = minesGrid.querySelectorAll('.cell');
+    cells.forEach(cell => {
+      cell.style.pointerEvents = 'none';
+    });
+  }
+
+  minesResetBtn.addEventListener('click', () => {
+    generateMines();
+    createMinesGrid();
+  });
+
+  generateMines();
+  createMinesGrid();
+
+  // Tower Game
+  const towerGame = document.getElementById('towerGame');
+  const towerResetBtn = document.getElementById('tower-reset');
+  const towerWinSound = document.getElementById('tower-win');
+  const towerLoseSound = document.getElementById('tower-lose');
+
+  let currentLevel = 0;
+
+  function createTower(){
+    towerGame.innerHTML = '';
+    for(let i=0; i<5; i++){
+      const floor = document.createElement('div');
+      floor.classList.add('floor');
+      floor.textContent = `Floor ${i+1}`;
+      floor.addEventListener('click', () => selectFloor(floor, i));
+      towerGame.appendChild(floor);
     }
+  }
 
-    function resetMines() {
-      generateMines();
-      createMinesGrid();
+  function selectFloor(floor, level){
+    if(level !== currentLevel) return;
+
+    const success = Math.random() < 0.7;
+    if(success){
+      floor.classList.add('active');
+      towerWinSound.volume = 0.3;
+      towerWinSound.play();
+      updateBalance(75 * (level + 1));
+      currentLevel++;
+    } else {
+      towerLoseSound.volume = 0.3;
+      towerLoseSound.play();
+      alert("You fell from the tower! -150");
+      updateBalance(-150);
+      resetTower();
     }
+  }
 
-    // Tower
-    const towerGame = document.getElementById("towerGame");
-    let currentLevel = 0;
+  function resetTower(){
+    currentLevel = 0;
+    createTower();
+  }
 
-    function createTower() {
-      towerGame.innerHTML = "";
-      for (let i = 0; i < 5; i++) {
-        const floor = document.createElement("div");
-        floor.classList.add("floor");
-        floor.textContent = `Floor ${i + 1}`;
-        floor.addEventListener("click", () => selectFloor(floor, i));
-        towerGame.appendChild(floor);
-      }
-    }
+  resetTower();
 
-    function selectFloor(floor, level) {
-      if (level !== currentLevel) return;
-      const success = Math.random() < 0.7;
-      if (success) {
-        floor.classList.add("active");
-        document.getElementById("winSound").play();
-        updateBalance(75 * (level + 1));
-        currentLevel++;
-      } else {
-        document.getElementById("boomSound").play();
-        alert("You fell from the tower! -150");
-        updateBalance(-150);
-        resetTower();
-      }
-    }
+</script>
 
-    function resetTower() {
-      currentLevel = 0;
-      createTower();
-    }
-
-    // Init
-    resetMines();
-    resetTower();
-  </script>
 </body>
 </html>
