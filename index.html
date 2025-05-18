@@ -1,27 +1,136 @@
 <!DOCTYPE html>
 <html lang="fi">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TopiaBets - Kolikonheitto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Poppins', sans-serif; background-color: #f0f8ff; text-align: center; padding: 50px; }
-    button { padding: 10px 20px; margin: 10px; font-size: 16px; }
-    #result { font-size: 24px; margin-top: 20px; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #2b3a67);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 36px;
+      color: #ffd700;
+    }
+
+    .game-box {
+      background: #2d2d44;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .balance {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #00ffcc;
+    }
+
+    .result {
+      font-size: 20px;
+      margin: 20px 0;
+    }
+
+    button {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      margin: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #357ABD;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      width: 100px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: auto;
+      padding: 20px;
+      font-size: 14px;
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body>
-  <h1>TopiaBets - Kolikonheitto</h1>
-  <p>Valitse: Kruuna tai Klaava</p>
-  <button onclick="flipCoin('Kruuna')">Kruuna</button>
-  <button onclick="flipCoin('Klaava')">Klaava</button>
-  <div id="result"></div>
+  <h1>TopiaBets</h1>
+  <div class="game-box">
+    <div class="balance" id="balance">Saldo: 100 TopiaCoins</div>
+
+    <label for="bet">Panos:</label><br />
+    <input type="number" id="bet" min="1" value="10" /><br />
+
+    <button onclick="flipCoin('Kruuna')">Kruuna</button>
+    <button onclick="flipCoin('Klaava')">Klaava</button>
+
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="footer">© 2025 TopiaBets</div>
 
   <script>
-    function flipCoin(choice) {
-      const outcome = Math.random() < 0.5 ? 'Kruuna' : 'Klaava';
-      const resultText = outcome === choice ? 'Voitit!' : 'Hävisit!';
-      document.getElementById('result').innerText = `Tulos: ${outcome} - ${resultText}`;
+    let balance = 100;
+
+    function updateBalance() {
+      document.getElementById('balance').innerText = `Saldo: ${balance} TopiaCoins`;
     }
+
+    function flipCoin(choice) {
+      const betAmount = parseInt(document.getElementById('bet').value);
+
+      if (isNaN(betAmount) || betAmount <= 0) {
+        alert("Syötä kelvollinen panos.");
+        return;
+      }
+
+      if (betAmount > balance) {
+        alert("Ei tarpeeksi TopiaCoineja.");
+        return;
+      }
+
+      const outcome = Math.random() < 0.5 ? 'Kruuna' : 'Klaava';
+      let resultText = `Tulos: ${outcome}. `;
+
+      if (outcome === choice) {
+        balance += betAmount;
+        resultText += "Voitit!";
+      } else {
+        balance -= betAmount;
+        resultText += "Hävisit!";
+      }
+
+      document.getElementById('result').innerText = resultText;
+      updateBalance();
+    }
+
+    updateBalance();
   </script>
 </body>
 </html>
