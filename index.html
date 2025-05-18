@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -92,57 +92,43 @@
   .cell.mine {
     background-color: #ef4444;
   }
-
-  /* Tower grid and floors - Uusi tyylitys */
+  /* Tower floors */
   .tower {
-    display: grid;
-    grid-template-columns: repeat(4, 80px);
-    grid-template-rows: repeat(12, 50px);
-    gap: 8px;
+    display: flex;
+    flex-direction: column-reverse; /* alempi kerros alhaalla */
+    gap: 0.5rem;
     margin-top: 1rem;
-    justify-content: center;
-    background: #222;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px #00ff99aa;
   }
-  .floor {
-    background: #333;
-    border-radius: 8px;
+  .floor-row {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .floor-tile {
+    width: 70px;
+    height: 70px;
+    background-color: #334155;
+    border-radius: 0.5rem;
+    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-weight: 700;
+    font-weight: bold;
     font-size: 1.1rem;
-    color: #0f0;
-    cursor: pointer;
     user-select: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: inset 0 0 5px #00ff99;
+    transition: background-color 0.3s;
   }
-  .floor:hover {
-    background-color: #00ff99;
-    color: #121212;
-    transform: scale(1.05);
-  }
-  .floor.selected {
+  .floor-tile.active {
     background-color: #22c55e;
-    color: #121212;
-    cursor: default;
-    box-shadow: 0 0 12px #22c55e;
-    transform: scale(1.1);
   }
-  .floor.bomb {
-    background-color: #8b0000 !important;
-    color: #fff !important;
-    cursor: default;
-    box-shadow: 0 0 15px #ff0000;
-    transform: scale(1.1);
+  .floor-tile.bomb {
+    background-color: #ef4444;
   }
-  .floor.disabled {
-    pointer-events: none;
-    opacity: 0.6;
-    cursor: default;
+  .floor-label {
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    color: #a5b4fc;
   }
 </style>
 </head>
@@ -150,7 +136,7 @@
 
 <header>
   <h1>TopiaBets</h1>
-  <div class="balance">Balance: <span id="balance">1000</span> 💰</div>
+  <div class="balance">Saldo: <span id="balance">1000</span> 💰</div>
 </header>
 
 <nav>
@@ -163,40 +149,41 @@
   <!-- Coinflip -->
   <section id="coinflip-section" class="active">
     <h2>Coinflip</h2>
-    <p>Choose heads or tails and try your luck!</p>
-    <button class="play-btn" id="coinflip-play">Flip Coin</button>
+    <p>Valitse klaava tai kruuna ja kokeile onneasi!</p>
+    <button class="play-btn" id="coinflip-play">Heitä kolikko</button>
   </section>
 
   <!-- Mines -->
   <section id="mines-section">
     <h2>Mines</h2>
-    <p>Avoid the mines and win rewards!</p>
+    <p>Vältä pommeja ja voita palkintoja!</p>
     <div class="grid" id="minesGrid"></div>
-    <button class="play-btn" id="mines-reset">Reset</button>
+    <button class="play-btn" id="mines-reset">Aloita uudelleen</button>
   </section>
 
   <!-- Tower -->
   <section id="tower-section">
     <h2>Tower</h2>
-    <p>Climb the tower floor by floor and win prizes!</p>
+    <p>Kiipää tornissa kerros kerrokselta. Valitse yksi laatta kustakin kerroksesta. Yksi laatta per kerros on pommi!</p>
     <div class="tower" id="towerGame"></div>
-    <button class="play-btn" id="tower-reset">Reset</button>
+    <button class="play-btn" id="tower-reset">Aloita uudelleen</button>
   </section>
 </main>
 
-<!-- Sounds for each game -->
-<audio id="coinflip-sound" src="https://www.myinstants.com/media/sounds/coinflip.mp3" preload="auto" volume="0.3"></audio>
-<audio id="coinflip-win" src="https://www.myinstants.com/media/sounds/mario-coin.mp3" preload="auto" volume="0.3"></audio>
-<audio id="coinflip-lose" src="https://www.myinstants.com/media/sounds/fail-trombone.mp3" preload="auto" volume="0.3"></audio>
+<!-- Äänet -->
+<audio id="coinflip-sound" src="https://www.myinstants.com/media/sounds/coinflip.mp3" preload="auto"></audio>
+<audio id="coinflip-win" src="https://www.myinstants.com/media/sounds/mario-coin.mp3" preload="auto"></audio>
+<audio id="coinflip-lose" src="https://www.myinstants.com/media/sounds/fail-trombone.mp3" preload="auto"></audio>
 
-<audio id="mines-boom" src="https://www.myinstants.com/media/sounds/explosion.mp3" preload="auto" volume="0.2"></audio>
-<audio id="mines-win" src="https://www.myinstants.com/media/sounds/coin.mp3" preload="auto" volume="0.2"></audio>
+<audio id="mines-boom" src="https://www.myinstants.com/media/sounds/explosion.mp3" preload="auto"></audio>
+<audio id="mines-win" src="https://www.myinstants.com/media/sounds/coin.mp3" preload="auto"></audio>
 
-<audio id="tower-win" src="https://www.myinstants.com/media/sounds/mario-coin.mp3" preload="auto" volume="0.3"></audio>
-<audio id="tower-lose" src="https://www.myinstants.com/media/sounds/fail-trombone.mp3" preload="auto" volume="0.3"></audio>
+<audio id="tower-win" src="https://www.myinstants.com/media/sounds/mario-coin.mp3" preload="auto"></audio>
+<audio id="tower-lose" src="https://www.myinstants.com/media/sounds/fail-trombone.mp3" preload="auto"></audio>
 
 <script>
-  // Navigation handling
+document.addEventListener('DOMContentLoaded', () => {
+  // Navigation
   const navButtons = document.querySelectorAll('nav button');
   const sections = document.querySelectorAll('main > section');
 
@@ -221,9 +208,6 @@
     if(balance < 0) balance = 0;
     balanceEl.textContent = balance;
   }
-  function updateBalanceDisplay() {
-    balanceEl.textContent = balance;
-  }
 
   // Coinflip Game
   const coinflipPlayBtn = document.getElementById('coinflip-play');
@@ -232,20 +216,17 @@
   const coinflipLoseSound = document.getElementById('coinflip-lose');
 
   coinflipPlayBtn.addEventListener('click', () => {
-    coinflipSound.volume = 0.3;
     coinflipSound.play();
 
     const win = Math.random() < 0.5;
     setTimeout(() => {
       if(win) {
-        coinflipWinSound.volume = 0.3;
         coinflipWinSound.play();
-        alert("You won 100!");
+        alert("Voitit 100!");
         updateBalance(100);
       } else {
-        coinflipLoseSound.volume = 0.3;
         coinflipLoseSound.play();
-        alert("You lost 100!");
+        alert("Hävisit 100!");
         updateBalance(-100);
       }
     }, 1000);
@@ -255,4 +236,153 @@
   const minesGrid = document.getElementById('minesGrid');
   const minesResetBtn = document.getElementById('mines-reset');
   const minesBoomSound = document.getElementById('mines-boom');
-  const minesWinSound =
+  const minesWinSound = document.getElementById('mines-win');
+
+  let minePositions = [];
+  let revealedIndices = new Set();
+
+  function generateMines() {
+    minePositions = [];
+    while(minePositions.length < 5){
+      let rand = Math.floor(Math.random() * 25);
+      if(!minePositions.includes(rand)) minePositions.push(rand);
+    }
+  }
+
+  function createMinesGrid() {
+    minesGrid.innerHTML = '';
+    revealedIndices.clear();
+    for(let i=0; i<25; i++){
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.addEventListener('click', () => revealCell(cell, i));
+      minesGrid.appendChild(cell);
+    }
+  }
+
+  function revealCell(cell, index){
+    if(revealedIndices.has(index)) return;
+    revealedIndices.add(index);
+
+    if(minePositions.includes(index)){
+      cell.classList.add('mine');
+      minesBoomSound.play();
+      alert('💥 Osuit pommiin! -100');
+      updateBalance(-100);
+      disableMinesClicks();
+    } else {
+      cell.classList.add('revealed');
+      minesWinSound.play();
+      updateBalance(50);
+    }
+  }
+
+  function disableMinesClicks(){
+    const cells = minesGrid.querySelectorAll('.cell');
+    cells.forEach(cell => {
+      cell.style.pointerEvents = 'none';
+    });
+  }
+
+  minesResetBtn.addEventListener('click', () => {
+    generateMines();
+    createMinesGrid();
+  });
+
+  generateMines();
+  createMinesGrid();
+
+  // Tower Game
+  const towerGame = document.getElementById('towerGame');
+  const towerResetBtn = document.getElementById('tower-reset');
+  const towerWinSound = document.getElementById('tower-win');
+  const towerLoseSound = document.getElementById('tower-lose');
+
+  const floorsCount = 12;
+  const tilesPerFloor = 4;
+  // Kerroin kerroksittain (voit muuttaa haluamaksesi)
+  const multipliers = Array.from({length: floorsCount}, (_, i) => 1 + i * 0.5);
+
+  let currentFloor = 0;
+  let gameActive = true;
+
+  // Tower data: kerroksittain pommi indeksi
+  let bombs = [];
+
+  function resetTower() {
+    currentFloor = 0;
+    gameActive = true;
+    bombs = [];
+    towerGame.innerHTML = '';
+    createTowerUI();
+  }
+
+  function createTowerUI() {
+    for(let floor = floorsCount - 1; floor >= 0; floor--) {
+      const floorRow = document.createElement('div');
+      floorRow.classList.add('floor-row');
+
+      for(let tile = 0; tile < tilesPerFloor; tile++) {
+        const tileDiv = document.createElement('div');
+        tileDiv.classList.add('floor-tile');
+        tileDiv.textContent = multipliers[floor].toFixed(2);
+        tileDiv.dataset.floor = floor;
+        tileDiv.dataset.tile = tile;
+        tileDiv.addEventListener('click', () => selectTile(floor, tile, tileDiv));
+        floorRow.appendChild(tileDiv);
+      }
+
+      // Kerroksen nimike alle
+      const label = document.createElement('div');
+      label.classList.add('floor-label');
+      label.textContent = `Kerros ${floor + 1} (x${multipliers[floor].toFixed(2)})`;
+
+      const container = document.createElement('div');
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.alignItems = 'center';
+      container.appendChild(floorRow);
+      container.appendChild(label);
+
+      towerGame.appendChild(container);
+    }
+
+    // Arvotaan pommit jokaiselle kerrokselle
+    for(let i=0; i<floorsCount; i++) {
+      bombs[i] = Math.floor(Math.random() * tilesPerFloor);
+    }
+  }
+
+  function selectTile(floor, tile, tileDiv) {
+    if(!gameActive) return;
+    if(floor !== currentFloor) {
+      alert(`Valitse ensin kerrokselta ${currentFloor + 1}`);
+      return;
+    }
+
+    // Voi valita vain yhden laatta kerrokselta
+    const floorRow = tileDiv.parentElement;
+    const tiles = floorRow.querySelectorAll('.floor-tile');
+    tiles.forEach(t => t.style.pointerEvents = 'none'); // estä useampi valinta
+
+    if(tile === bombs[floor]) {
+      // Pommi osui
+      tileDiv.classList.add('bomb');
+      towerLoseSound.play();
+      alert(`Pommi räjähti! Hävisit ${Math.floor(150)} 💰`);
+      updateBalance(-150);
+      gameActive = false;
+      // Palauta peli 2 sek jälkeen
+      setTimeout(() => {
+        resetTower();
+      }, 2000);
+    } else {
+      // Voitto
+      tileDiv.classList.add('active');
+      towerWinSound.play();
+      const winAmount = Math.floor(50 * multipliers[floor]);
+      alert(`Voitit ${winAmount} 💰 kerroksella ${floor + 1}!`);
+      updateBalance(winAmount);
+      currentFloor++;
+      if(currentFloor >= floorsCount) {
+        alert('🎉 Voitit koko tornin! Aloitetaan alusta.');
