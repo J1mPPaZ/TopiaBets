@@ -1,91 +1,119 @@
-<!DOCTYPE html>
-<html lang="fi">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>TopiaBets Tower</title>
-<style>
-  body {
-    background: #121212;
-    color: #eee;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
-    min-height: 100vh;
+const towerGame = document.getElementById('towerGame');
+const towerResetBtn = document.getElementById('tower-reset');
+const towerWinSound = document.getElementById('tower-win');
+const towerLoseSound = document.getElementById('tower-lose');
+
+const rows = 12;
+const cols = 4;
+
+let currentLevel = 0; // Aloitetaan alimmaisesta kerroksesta (0)
+let bombPositions = []; // Pommit kerroksittain
+let selectedThisLevel = false;
+let gameActive = true;
+
+const levelMultipliers = Array.from({length: rows}, (_, i) => (1 + i * 0.3).toFixed(2));
+
+function createBombs() {
+  bombPositions = [];
+  for(let i=0; i<rows; i++) {
+    // Jokaiselle kerrokselle arvotaan yksi pommi sarakkeista 0-3
+    bombPositions[i] = Math.floor(Math.random() * cols);
   }
-  .tower {
-    display: grid;
-    grid-template-columns: repeat(4, 80px);
-    grid-template-rows: repeat(12, 50px);
-    gap: 8px;
-    background: #222;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 0 15px #00ff99aa;
-  }
-  .tile {
-    background: #333;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: 700;
-    font-size: 1.2rem;
-    color: #0f0;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: inset 0 0 5px #00ff99;
-  }
-  .tile:hover {
-    background-color: #00ff99;
-    color: #121212;
-    transform: scale(1.05);
-  }
-  .tile.opened {
-    background-color: #005522;
-    color: #aaffaa;
-    box-shadow: none;
-    cursor: default;
-    transform: scale(1);
-  }
-</style>
-</head>
-<body>
-  <div class="tower" id="tower"></div>
+}
 
-<script>
-  const tower = document.getElementById('tower');
-  const rows = 12;
-  const cols = 4;
+function createTower() {
+  towerGame.innerHTML = '';
+  selectedThisLevel = false;
+  for(let r = rows - 1; r >= 0; r--) { // Näytetään ylin kerros ylhäällä
+    for(let c = 0; c < cols; c++) {
+      const floor = document.createElement('div');
+      floor.classList.add('floor');
+      floor.dataset.level = r;
+      floor.dataset.col = c;
+      floor.textContent = `Lvl ${r+1}`;
+      floor.title = `Kerroin: ${levelMultipliers[r]}x`;
 
-  // Luo tower-laatat
-  for (let r = rows - 1; r >= 0; r--) {
-    for (let c = 0; c < cols; c++) {
-      const tile = document.createElement('div');
-      tile.classList.add('tile');
-      tile.dataset.row = r;
-      tile.dataset.col = c;
-
-      // Satunnainen kerroin 1.1 - 5.0, kasvava ylemmäs
-      const baseMultiplier = 1.1 + (r * 0.32);
-      const randomFactor = Math.random() * 0.5; // pieni random
-      const multiplier = (baseMultiplier + randomFactor).toFixed(2);
-
-      tile.textContent = multiplier;
-
-      tile.addEventListener('click', () => {
-        if (!tile.classList.contains('opened')) {
-          tile.classList.add('opened');
-          // Voit tänne lisätä lisälogiikkaa esim. voittolaskelmat
-        }
-      });
-
-      tower.appendChild(tile);
+      floor.addEventListener('click', () => selectFloor(floor, r, c));
+      
+      // Estetään klikkaus jos taso ei ole se missä ollaan
+      if (r !== currentLevel || !gameActive) {
+        floor.classList.add('disabled');
+      }
+      
+      towerGame.appendChild(floor);
     }
   }
-</script>
-</body>
-</html>
+  updateBalanceDisplay();
+}
+
+function selectFloor(floor, level, col) {
+  if(!gameActive) return;
+  if(level !== currentLevel) return; // Vain aktiivinen kerros
+
+  if(selectedThisLevel) return; // Vain yksi valinta per kerros
+
+  if(col === bombPositions[level]) {
+    // Pommi!
+    floor.classList.add('bomb');
+    towerLoseSound.volume = 0.3;
+    towerLoseSound.play();
+
+    alert(`Pommi! Hävisit pelin tasolla ${level + 1} -150 kolikkoa.`);
+    updateBalance(-150);
+    gameActive = false;
+    disableAllFloors();
+    return;
+  } else {
+    floor.classList.add('selected');
+    towerWinSound.volume = 0.3;
+    towerWinSound.play();
+
+    const reward = Math.floor(levelMultipliers[level] * 100);
+    alert(`Onnistuit tasolla ${level + 1}! Voitit ${reward} kolikkoa.`);
+    updateBalance(reward);
+
+    selectedThisLevel = true;
+    disableFloorsOnLevel(level);
+
+    // Siirrytään seuraavalle kerrokselle, jos mahdollista
+    if(currentLevel < rows - 1) {
+      currentLevel++;
+      enableFloorsOnLevel(currentLevel);
+    } else {
+      alert("Onnittelut! Nousit viimeiselle tasolle!");
+      gameActive = false;
+      disableAllFloors();
+    }
+  }
+}
+
+function disableFloorsOnLevel(level) {
+  const floors = towerGame.querySelectorAll(`.floor[data-level='${level}']`);
+  floors.forEach(f => {
+    if(!f.classList.contains('selected') && !f.classList.contains('bomb')) {
+      f.classList.add('disabled');
+    }
+  });
+}
+
+function enableFloorsOnLevel(level) {
+  const floors = towerGame.querySelectorAll(`.floor[data-level='${level}']`);
+  floors.forEach(f => f.classList.remove('disabled'));
+}
+
+function disableAllFloors() {
+  const floors = towerGame.querySelectorAll('.floor');
+  floors.forEach(f => f.classList.add('disabled'));
+}
+
+function resetTower() {
+  currentLevel = 0;
+  gameActive = true;
+  createBombs();
+  createTower();
+}
+
+towerResetBtn.addEventListener('click', resetTower);
+
+// Alusta peli
+resetTower();
